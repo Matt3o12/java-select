@@ -4,8 +4,8 @@ from java_select.jvmwrapper import JVMWrapper, InvalidVersionFormatException
 
 class JVMWrapperTest(unittest.TestCase):
     def assertRaisesInvalidVersionException(self, version):
-        with self.assertRaises(InvalidVersionFormatException):
-            JVMWrapper.getVersionByString(version)
+        e = InvalidVersionFormatException
+        self.assertRaises(e, JVMWrapper.getVersionByString, version)
 
     def setUp(self):
         self.jvm1 = JVMWrapper(
@@ -49,35 +49,22 @@ class JVMWrapperTest(unittest.TestCase):
         self.assertEquals((1,3,0,3), self.jvm2.version)
         self.assertEquals("1.3.0_03", self.jvm2.version_verbose)
 
-        with self.assertRaises(InvalidVersionFormatException):
-            self.jvm2.version = (1,)
-
-        with self.assertRaises(InvalidVersionFormatException):
-            self.jvm2.version = (1,3)
-
-        with self.assertRaises(InvalidVersionFormatException):
-            self.jvm2.version = (1,3,3)
-
-        with self.assertRaises(InvalidVersionFormatException):
-            self.jvm2.version = (2,0,0,1)
-
+        e = InvalidVersionFormatException
+        self.assertRaises(e, setattr, self.jvm2, "version", (1,))
+        self.assertRaises(e, setattr, self.jvm2, "version", (1,3))
+        self.assertRaises(e, setattr, self.jvm2, "version", (1,3,3))
+        self.assertRaises(e, setattr, self.jvm2, "version", (2,0,0,1))
 
     def testSetVersionStr(self):
         self.jvm2.version = "1.5.0_04"
         self.assertEquals((1,5,0,4), self.jvm2.version)
         self.assertEquals("1.5.0_04", self.jvm2.version_verbose)
 
-        with self.assertRaises(InvalidVersionFormatException):
-            self.jvm2.version = "1"
-
-        with self.assertRaises(InvalidVersionFormatException):
-            self.jvm2.version = "1.3"
-
-        with self.assertRaises(InvalidVersionFormatException):
-            self.jvm2.version = "1.3.3"
-
-        with self.assertRaises(InvalidVersionFormatException):
-            self.jvm2.version = "2.0.0_01"
+        e = InvalidVersionFormatException
+        self.assertRaises(e, setattr, self.jvm2, "version", "1")
+        self.assertRaises(e, setattr, self.jvm2, "version", "1.3")
+        self.assertRaises(e, setattr, self.jvm2, "version", "1.3.3")
+        self.assertRaises(e, setattr, self.jvm2, "version", "2.0.0_01")
 
     def testRepl(self):
         self.assertEquals("JVMWrapper(version='1.6.0_34', path='/sdf')", repr(self.jvm1))
