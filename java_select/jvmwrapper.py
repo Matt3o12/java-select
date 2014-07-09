@@ -6,12 +6,12 @@ class InvalidVersionFormatException(Exception):
             raise ValueError("Either msg or version needs to be given.")
 
         if msg is None:
-            msg = "Java version '{}' is not a valid Java Version".format(version)
+            msg = "Java version '{0}' is not a valid Java Version".format(version)
 
         super(InvalidVersionFormatException, self).__init__(msg, *args, **kwargs)
 
     def __repr__(self):
-        return "{self.__class__.__name__}(msg='{self.message}')".format(self=self)
+        return "{self.__class__.__name__}(msg='{self!s}')".format(self=self)
 
 class JVMWrapper(object):
     """

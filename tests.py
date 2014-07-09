@@ -80,14 +80,13 @@ class JVMWrapperTest(unittest.TestCase):
 class InvalidVersionFormatExceptionTest(unittest.TestCase):
     def testInit(self):
         e = InvalidVersionFormatException
-        self.assertEquals("Test Message", e(msg = "Test Message").message)
+        self.assertEquals("Test Message", str(e(msg = "Test Message")))
 
         s = "Java version '1.6.3_02' is not a valid Java Version"
-        self.assertEquals(s, e(version="1.6.3_02").message)
+        self.assertEquals(s, str(e(version="1.6.3_02")))
 
     def testInitKeyError(self):
-        with self.assertRaises(ValueError):
-            InvalidVersionFormatException()
+        self.assertRaises(ValueError, InvalidVersionFormatException)
 
     def testRepr(self):
         e = InvalidVersionFormatException(version="1.6.3_02")
