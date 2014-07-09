@@ -1,0 +1,5 @@
+htmlcov
+test-reports
+*.py,cover
+.coverage
+coverage.xml
