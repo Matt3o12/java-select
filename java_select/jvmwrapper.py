@@ -1,4 +1,7 @@
 import re
+import os
+import subprocess
+
 
 class InvalidVersionFormatException(Exception):
     def __init__(self, msg = None, version = None, *args, **kwargs):
@@ -13,12 +16,22 @@ class InvalidVersionFormatException(Exception):
     def __repr__(self):
         return "{self.__class__.__name__}(msg='{self!s}')".format(self=self)
 
+class InvalidJavaCommandException(Exception):
+    def __init__(self, msg = None, command = None, *args, **kwargs):
+        if msg is None and command is None:
+            raise ValueError("Either msg or version needs to be given.")
+
+        if msg is None:
+            msg = "'{0}' is not a valid Java command.".format(command)
+
+        super(InvalidJavaCommandException, self).__init__(msg, *args, **kwargs)
+
 class JVMWrapper(object):
     """
     Contains information about a JVM (the path, version, etc).
     """
 
-    _version_regex = r"^1\.([0-9]{1,2})\.([0-9]{1,2})_([0-9]{1,3})(-[0-9a-zA-Z]+)?$"
+    _version_regex = r"1\.([0-9]{1,2})\.([0-9]{1,2})_([0-9]{1,3})(-[0-9a-zA-Z]+)?"
 
     def __init__(self, path = None, version = None):
         self._version = None
@@ -59,8 +72,13 @@ class JVMWrapper(object):
         return str.format(self=self)
 
     @classmethod
-    def getVersionByString(cls, version):
-        match = re.match(cls._version_regex, version)
+    def getVersionByString(cls, version, strict = True):
+        match = None
+        if strict:
+            match = re.match(r"^%s$" % cls._version_regex, version)
+        else:
+            match = re.search(cls._version_regex, version)
+
         if match:
             # Names according to:
             # http://www.oracle.com/technetwork/java/javase/versioning-naming-139433.html
@@ -74,6 +92,13 @@ class JVMWrapper(object):
             raise InvalidVersionFormatException(version = version)
 
 
-    # @classmethod
-    # def getJVMByPath(cls, path):
-    #     pass
+    @classmethod
+    def getJVMByPath(cls, path):
+        javaExecutable = os.path.join(path, "bin", "java")
+        output = subprocess.check_output(
+            [javaExecutable, "-version"],
+            stderr=subprocess.STDOUT)
+
+        version = cls.getVersionByString(output, strict=False)
+
+        return JVMWrapper(path=path, version=version)

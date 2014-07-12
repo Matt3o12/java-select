@@ -1,8 +1,14 @@
 import unittest
-from java_select.jvmwrapper import JVMWrapper, InvalidVersionFormatException
+import json
+import mock
 
+from java_select.jvmwrapper import *
+
+from nose_parameterized import parameterized, param
 
 class JVMWrapperTest(unittest.TestCase):
+    jvm_homes_path = os.path.join("tests", "jvm_homes_test.json")
+
     def assertRaisesInvalidVersionException(self, version):
         e = InvalidVersionFormatException
         self.assertRaises(e, JVMWrapper.getVersionByString, version)
@@ -43,6 +49,15 @@ class JVMWrapperTest(unittest.TestCase):
         self.assertRaisesInvalidVersionException("1.7.2")
         self.assertRaisesInvalidVersionException("blah")
         self.assertRaisesInvalidVersionException("1.b.3")
+        self.assertRaisesInvalidVersionException("test 1.5.0_01")
+        self.assertRaisesInvalidVersionException("1.5.0_01 test")
+
+    def testGetVersionByString_nonstrict(self):
+        version = lambda v: JVMWrapper.getVersionByString(v, strict=False)
+        self.assertEquals((1,5,0,1), version("1.5.0_01"))
+        self.assertEquals((1,11,2,5), version("1.11.2_5-b13"))
+        self.assertEquals((1,5,0,1), version("test 1.5.0_01"))
+        self.assertEquals((1,5,0,1), version("1.5.0_01 test"))
 
     def testSetVersion(self):
         self.jvm2.version = (1,3,0,3)
@@ -77,6 +92,20 @@ class JVMWrapperTest(unittest.TestCase):
         s = "Java 1.8.0_01 at /home/matt3o12/jvm1.8.0_01/Contents/Home"
         self.assertEquals(s, str(self.jvm2))
 
+    def test(self):
+        json.load(open(self.jvm_homes_path, "r"))
+
+    @parameterized.expand(json.load(open(jvm_homes_path, "r")))
+    def testGetJVMByPath(self, path, version, cmdOut):
+        version = tuple(version)
+
+        with mock.patch.object(subprocess, 'check_output') as checkOutput:
+            checkOutput.return_value = cmdOut
+
+            jvm = JVMWrapper.getJVMByPath(path)
+            self.assertEquals(path, jvm.path)
+            self.assertEquals(version, jvm.version)
+
 class InvalidVersionFormatExceptionTest(unittest.TestCase):
     def testInit(self):
         e = InvalidVersionFormatException
@@ -84,6 +113,7 @@ class InvalidVersionFormatExceptionTest(unittest.TestCase):
 
         s = "Java version '1.6.3_02' is not a valid Java Version"
         self.assertEquals(s, str(e(version="1.6.3_02")))
+        # self.fail()
 
     def testInitKeyError(self):
         self.assertRaises(ValueError, InvalidVersionFormatException)
@@ -95,6 +125,21 @@ class InvalidVersionFormatExceptionTest(unittest.TestCase):
 
         self.assertEquals(s, repr(e))
 
-if __name__ == '__main__':
-    import xmlrunner
-    unittest.main(testRunner=xmlrunner.XMLTestRunner(output='test-reports'))
+class InvalidJavaCommandExceptionTest(unittest.TestCase):
+    def testInit(self):
+        e = InvalidJavaCommandException
+        self.assertEquals("Test Message", str(e(msg = "Test Message")))
+
+        s = "'/test/java' is not a valid Java command."
+        self.assertEquals(s, str(e(command="/test/java")))
+        # self.fail()
+
+    def testInitKeyError(self):
+        self.assertRaises(ValueError, InvalidVersionFormatException)
+
+    def testRepr(self):
+        e = InvalidVersionFormatException(version="1.6.3_02")
+        s = "InvalidVersionFormatException(msg='"\
+                "Java version '1.6.3_02' is not a valid Java Version')"
+
+        self.assertEquals(s, repr(e))
