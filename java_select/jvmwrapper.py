@@ -95,9 +95,15 @@ class JVMWrapper(object):
     @classmethod
     def getJVMByPath(cls, path):
         javaExecutable = os.path.join(path, "bin", "java")
-        output = subprocess.check_output(
-            [javaExecutable, "-version"],
-            stderr=subprocess.STDOUT)
+        args = [javaExecutable, "-version"]
+        process = subprocess.Popen(args,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+        output = process.communicate()[0]
+
+        if process.returncode is not 0:
+            msg = "Java command return with invalid returncode: '{0}'; output: {1}"
+            raise InvalidJavaCommandException(msg=msg.format(process.returncode, output))
 
         version = cls.getVersionByString(output, strict=False)
 

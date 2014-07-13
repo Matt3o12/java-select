@@ -99,12 +99,23 @@ class JVMWrapperTest(unittest.TestCase):
     def testGetJVMByPath(self, path, version, cmdOut):
         version = tuple(version)
 
-        with mock.patch.object(subprocess, 'check_output') as checkOutput:
-            checkOutput.return_value = cmdOut
+        with mock.patch("subprocess.Popen") as PopenMock:
+            PopenMock().configure_mock(returncode = 0)
+            PopenMock().communicate.return_value = (cmdOut, None)
 
             jvm = JVMWrapper.getJVMByPath(path)
             self.assertEquals(path, jvm.path)
             self.assertEquals(version, jvm.version)
+
+    @parameterized.expand((c, ) for c in [1,-1,20,12])
+    def testGetJVMByPath_nonZeroReturnCode(self, code):
+        with mock.patch("subprocess.Popen") as PopenMock:
+            PopenMock().configure_mock(returncode=code)
+            PopenMock().communicate.return_value = (None, None)
+
+            e = InvalidJavaCommandException
+            self.assertRaises(e, JVMWrapper.getJVMByPath, "/test")
+
 
 class InvalidVersionFormatExceptionTest(unittest.TestCase):
     def testInit(self):
@@ -113,7 +124,6 @@ class InvalidVersionFormatExceptionTest(unittest.TestCase):
 
         s = "Java version '1.6.3_02' is not a valid Java Version"
         self.assertEquals(s, str(e(version="1.6.3_02")))
-        # self.fail()
 
     def testInitKeyError(self):
         self.assertRaises(ValueError, InvalidVersionFormatException)
@@ -132,10 +142,9 @@ class InvalidJavaCommandExceptionTest(unittest.TestCase):
 
         s = "'/test/java' is not a valid Java command."
         self.assertEquals(s, str(e(command="/test/java")))
-        # self.fail()
 
     def testInitKeyError(self):
-        self.assertRaises(ValueError, InvalidVersionFormatException)
+        self.assertRaises(ValueError, InvalidJavaCommandException)
 
     def testRepr(self):
         e = InvalidVersionFormatException(version="1.6.3_02")
