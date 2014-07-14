@@ -2,8 +2,10 @@ import re
 import os
 import subprocess
 
+class InvalidJavaException(Exception):
+    pass
 
-class InvalidVersionFormatException(Exception):
+class InvalidVersionFormatException(InvalidJavaException):
     def __init__(self, msg = None, version = None, *args, **kwargs):
         if msg is None and version is None:
             raise ValueError("Either msg or version needs to be given.")
@@ -16,7 +18,7 @@ class InvalidVersionFormatException(Exception):
     def __repr__(self):
         return "{self.__class__.__name__}(msg='{self!s}')".format(self=self)
 
-class InvalidJavaCommandException(Exception):
+class InvalidJavaCommandException(InvalidJavaException):
     def __init__(self, msg = None, command = None, *args, **kwargs):
         if msg is None and command is None:
             raise ValueError("Either msg or version needs to be given.")
@@ -95,6 +97,9 @@ class JVMWrapper(object):
     @classmethod
     def getJVMByPath(cls, path):
         javaExecutable = os.path.join(path, "bin", "java")
+        if not os.access(javaExecutable, os.EX_OK):
+            raise InvalidJavaException("'{0}' is not a valid JVM.".format(path))
+
         args = [javaExecutable, "-version"]
         process = subprocess.Popen(args,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)

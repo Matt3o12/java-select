@@ -99,22 +99,43 @@ class JVMWrapperTest(unittest.TestCase):
     def testGetJVMByPath(self, path, version, cmdOut):
         version = tuple(version)
 
-        with mock.patch("subprocess.Popen") as PopenMock:
-            PopenMock().configure_mock(returncode = 0)
-            PopenMock().communicate.return_value = (cmdOut, None)
+        with mock.patch("os.access") as AccessMock:
+            AccessMock.return_value = True
 
-            jvm = JVMWrapper.getJVMByPath(path)
-            self.assertEquals(path, jvm.path)
-            self.assertEquals(version, jvm.version)
+            with mock.patch("subprocess.Popen") as PopenMock:
+                PopenMock().configure_mock(returncode = 0)
+                PopenMock().communicate.return_value = (cmdOut, None)
+
+                jvm = JVMWrapper.getJVMByPath(path)
+                self.assertEquals(path, jvm.path)
+                self.assertEquals(version, jvm.version)
+
+            expectedPath = os.path.join(path, "bin", "java")
+            AccessMock.assert_called_once_with(expectedPath, os.EX_OK)
 
     @parameterized.expand((c, ) for c in [1,-1,20,12])
     def testGetJVMByPath_nonZeroReturnCode(self, code):
-        with mock.patch("subprocess.Popen") as PopenMock:
-            PopenMock().configure_mock(returncode=code)
-            PopenMock().communicate.return_value = (None, None)
+        with mock.patch("os.access") as AccessMock:
+            AccessMock.return_value = True
 
-            e = InvalidJavaCommandException
-            self.assertRaises(e, JVMWrapper.getJVMByPath, "/test")
+            with mock.patch("subprocess.Popen") as PopenMock:
+                PopenMock().configure_mock(returncode=code)
+                PopenMock().communicate.return_value = (None, None)
+
+                e = InvalidJavaCommandException
+                self.assertRaises(e, JVMWrapper.getJVMByPath, "/test")
+
+            expectedPath = os.path.join("/test", "bin", "java")
+            AccessMock.assert_called_once_with(expectedPath, os.EX_OK)
+
+    def testGetJVMByPath_NotExecutable(self):
+        with mock.patch("os.access") as AccessMock:
+            AccessMock.return_value = False
+
+            self.assertRaises(InvalidJavaException, JVMWrapper.getJVMByPath, "/test")
+
+            expectedPath = os.path.join("/test", "bin", "java")
+            AccessMock.assert_called_once_with(expectedPath, os.EX_OK)
 
 
 class InvalidVersionFormatExceptionTest(unittest.TestCase):

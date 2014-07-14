@@ -24,6 +24,7 @@ class JavaSelectScript(object):
 
     def showVersion(self):
         # TODO: Display correct version
+        # TODO: also display current Java version.
         print "Version: 0.0 (dev)"
 
 
