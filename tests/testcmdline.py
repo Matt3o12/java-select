@@ -41,7 +41,7 @@ class TestJavaSelectScript(unittest.TestCase):
         self.script.run()
         self.assertEquals(1, error.call_count)
         self.assertEquals(1, len(error.call_args[0]))
-        self.assertIsInstance(error.call_args[0][0], basestring)
+        self.assertTrue(isinstance(error.call_args[0][0], basestring))
 
     def testRun_invalidArgument(self):
         self.script.args = ["Invalid_arg"]
