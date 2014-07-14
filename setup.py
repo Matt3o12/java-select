@@ -1,5 +1,4 @@
-from distutils.core import setup
-
+from setuptools import setup
 
 setup(
     name = "java-select",
@@ -7,5 +6,6 @@ setup(
     description = "Command line script to easily switch a Java version.",
     author = "Matteo Kloiber (Matt3o12)",
     author_email = "info@matt3o12.de",
-    scripts = ["java-select.py"],
+
+    entry_points = {'console_scripts': "java-select = bin/java-select.py"},
 )
