@@ -4,7 +4,7 @@ import mock
 
 from java_select.jvmwrapper import *
 
-from nose_parameterized import parameterized, param
+from nose_parameterized import parameterized
 
 class JVMWrapperTest(unittest.TestCase):
     jvm_homes_path = os.path.join("tests", "jvm_homes_test.json")
