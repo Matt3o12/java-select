@@ -1,7 +1,7 @@
 import os
 from jvmwrapper import JVMWrapper, InvalidJavaException
 
-def _getCurrentJVM():
+def getCurrentJVM():
     # TODO: Add logging
     if not "JAVA_HOME" in os.environ:
         return None
@@ -16,10 +16,9 @@ def _getCurrentJVM():
     return jvm
 
 
-def _setCurrentJVM(newJvm):
+def setCurrentJVM(newJvm):
     if not isinstance(newJvm, JVMWrapper):
         raise KeyError("{0} needs to be an instance of JVMWrapper".format(newJvm))
 
     os.environ["JAVA_HOME"] = newJvm.path
 
-currentJVM = property(_getCurrentJVM, _setCurrentJVM)

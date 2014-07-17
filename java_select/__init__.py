@@ -1,1 +1,1 @@
-from functions import currentJVM
+from functions import getCurrentJVM, setCurrentJVM

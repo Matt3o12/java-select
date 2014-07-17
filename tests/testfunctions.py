@@ -1,5 +1,5 @@
 import unittest
-from java_select.functions import _getCurrentJVM, _setCurrentJVM
+from java_select import getCurrentJVM, setCurrentJVM
 from java_select.jvmwrapper import InvalidJavaException, JVMWrapper
 
 from mock import *
@@ -9,13 +9,13 @@ class TestFunctionTestCase(unittest.TestCase):
     @patch.dict(os.environ, {"JAVA_HOME": ""})
     def testGetCurrentJVM_noJavaHome(self):
         del os.environ["JAVA_HOME"]
-        self.assertTrue(_getCurrentJVM() is None)
+        self.assertTrue(getCurrentJVM() is None)
 
     @patch.dict(os.environ, {"JAVA_HOME": "/invalid/java/home"})
     @patch("java_select.jvmwrapper.JVMWrapper.getJVMByPath")
     def testGetCurrentJVM_invalidHome(self, getJVMByPathMock):
         getJVMByPathMock.side_effect = InvalidJavaException()
-        self.assertTrue(_getCurrentJVM() is None)
+        self.assertTrue(getCurrentJVM() is None)
         getJVMByPathMock.assert_called_once_with("/invalid/java/home")
 
     @patch.dict(os.environ, {"JAVA_HOME": "/path/to/java/home"})
@@ -24,7 +24,7 @@ class TestFunctionTestCase(unittest.TestCase):
         JVMWrapperMock = Mock("JVMWrapper")
         getJVMByPathMock.return_value = JVMWrapperMock
 
-        currentJVM = _getCurrentJVM()
+        currentJVM = getCurrentJVM()
         getJVMByPathMock.assert_called_once_with("/path/to/java/home")
         self.assertEquals(JVMWrapperMock, currentJVM)
 
@@ -32,8 +32,8 @@ class TestFunctionTestCase(unittest.TestCase):
     # environment.
     @patch.dict(os.environ)
     def testSetCurrentJVM_raises(self):
-        self.assertRaises(KeyError, _setCurrentJVM, "Some string")
-        self.assertRaises(KeyError, _setCurrentJVM, None)
+        self.assertRaises(KeyError, setCurrentJVM, "Some string")
+        self.assertRaises(KeyError, setCurrentJVM, None)
 
     @patch.dict(os.environ, {"JAVA_HOME": ""})
     def testSetCurrentJVM_noJavaHome(self):
@@ -41,7 +41,7 @@ class TestFunctionTestCase(unittest.TestCase):
         wrapper = Mock(JVMWrapper)
         wrapper.configure_mock(path="/test/java/home")
 
-        _setCurrentJVM(wrapper)
+        setCurrentJVM(wrapper)
         self.assertEquals("/test/java/home", os.environ["JAVA_HOME"])
 
     @patch.dict(os.environ, {"JAVA_HOME": "/old/java/home"})
@@ -50,5 +50,5 @@ class TestFunctionTestCase(unittest.TestCase):
         wrapper.configure_mock(path="/new/java/home")
 
         self.assertEquals("/old/java/home", os.environ["JAVA_HOME"])
-        _setCurrentJVM(wrapper)
+        setCurrentJVM(wrapper)
         self.assertEquals("/new/java/home", os.environ["JAVA_HOME"])
