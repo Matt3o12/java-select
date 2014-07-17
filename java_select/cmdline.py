@@ -1,6 +1,6 @@
 import sys
 import optparse
-import pdb
+import functions
 
 class JavaSelectOptionParser(optparse.OptionParser, object):
     def __init__(self):
@@ -19,6 +19,8 @@ class JavaSelectScript(object):
             self.showVersion()
         elif len(args) != 1:
             self.optParser.error("Changes the Java Home. Use 'java-select help' for help")
+        elif "show" in args:
+            self.showCurrentJVM()
         else:
             raise optparse.OptionValueError("Invalid argument: {0}".format(args[0]))
 
@@ -26,6 +28,15 @@ class JavaSelectScript(object):
         # TODO: Display correct version
         # TODO: also display current Java version.
         print "Version: 0.0 (dev)"
+
+    def showCurrentJVM(self):
+        jvm = functions.getCurrentJVM()
+        if not jvm:
+            print "No Java version could be found."
+            print "Use 'java-select change' to change Java."
+        else:
+            print "Java {version} at {path}".format(version=jvm.version_verbose, path=jvm.path)
+
 
 
 def main(args = None):
