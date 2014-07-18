@@ -1,7 +1,15 @@
 language: python
+env:
+    - functionalTests=false
+    - functionalTests=true
+    
 python:
     - "2.6"
     - "2.7"
+
+matrix:
+    allow_failures:
+        - env: functionalTests=true
     
 install: pip install -r dev-requirements.txt
 script: nosetests tests

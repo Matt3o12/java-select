@@ -5,3 +5,6 @@ test-reports
 coverage.xml
 .noseids
 nosetests.xml
+build
+dist
+java_select.egg-info
