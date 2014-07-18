@@ -13,19 +13,19 @@ matrix:
     
 install: 
     - if [[ $functionalTests == "true" ]]; then
-         python setup.py install
+         python setup.py install;
       else
-          pip install -r dev-requirements.txt
+          pip install -r dev-requirements.txt;
       fi
 
 before_script:
     - if [[ $functionalTests == "true" ]]; then
-        cd "tests/functional/osx"
+        cd "tests/functional/osx";
       fi
       
 script:
     - if [[ $functionalTests == "true" ]]; then
-        sh tests.sh
+        sh tests.sh;
       else
-        nosetests tests
+        nosetests tests;
       fi
